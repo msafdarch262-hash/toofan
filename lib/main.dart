@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://xekkhzuqmnoxnoybuncz.supabase.co',
-    anonKey: 'sb_publishable_fhB6tL6Fi_OUbRLYAMe3ZQ_Rc3E3j-I',
+    anonKey: 'sb_publishable_mq5d4H_Jo5w3xlnvB5h2Dw_LQJtJcDM',
   );
   runApp(const ToofanApp());
 }
@@ -17,7 +17,7 @@ class ToofanApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TOOFAN',
-      theme: ThemeData(primarySwatch: Colors.orange),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const AuthGate(),
     );
   }
@@ -43,117 +43,52 @@ class _LoginPageState extends State<LoginPage> {
   final email = TextEditingController();
   final pass = TextEditingController();
   bool loading = false;
-
-  Future<void> signUp() async {
+  Future<void> login() async {
     setState(() => loading = true);
     try {
-      await Supabase.instance.client.auth.signUp(email: email.text, password: pass.text);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account ban gaya! Login karo')));
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-    setState(() => loading = false);
-  }
-
-  Future<void> signIn() async {
-    setState(() => loading = true);
-    try {
-      await Supabase.instance.client.auth.signInWithPassword(email: email.text, password: pass.text);
+      await Supabase.instance.client.auth.signInWithPassword(email: email.text.trim(), password: pass.text.trim());
       if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
     setState(() => loading = false);
   }
-
+  Future<void> signup() async {
+    setState(() => loading = true);
+    try {
+      await Supabase.instance.client.auth.signUp(email: email.text.trim(), password: pass.text.trim());
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account bana, ab Login karo')));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+    setState(() => loading = false);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.bolt, size: 80, color: Colors.orange),
-            const Text('TOOFAN', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 30),
-            TextField(controller: email, decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(controller: pass, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder())),
-            const SizedBox(height: 20),
-            if (loading) const CircularProgressIndicator() else Column(
-              children: [
-                SizedBox(width: double.infinity, child: ElevatedButton(onPressed: signIn, style: ElevatedButton.styleFrom(backgroundColor: Colors.orange), child: const Text('LOGIN'))),
-                SizedBox(width: double.infinity, child: OutlinedButton(onPressed: signUp, child: const Text('SIGN UP'))),
-              ],
-            ),
-          ],
-        ),
-      ),
+      appBar: AppBar(title: const Text('TOOFAN - Login'), backgroundColor: const Color(0xFF1976D2), foregroundColor: Colors.white),
+      body: Padding(padding: const EdgeInsets.all(20), child: Column(children: [
+        TextField(controller: email, decoration: const InputDecoration(labelText: 'Email')),
+        TextField(controller: pass, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
+        const SizedBox(height: 20),
+        loading ? const CircularProgressIndicator() : Row(children: [
+          Expanded(child: ElevatedButton(onPressed: login, child: const Text('Login'))),
+          const SizedBox(width: 10),
+          Expanded(child: OutlinedButton(onPressed: signup, child: const Text('Signup'))),
+        ])
+      ])),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final supabase = Supabase.instance.client;
-  List posts = [];
-  final postCtrl = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    fetchPosts();
-  }
-
-  Future<void> fetchPosts() async {
-    final data = await supabase.from('posts').select().order('created_at', ascending: false);
-    setState(() => posts = data);
-  }
-
-  Future<void> addPost() async {
-    if (postCtrl.text.isEmpty) return;
-    await supabase.from('posts').insert({'content': postCtrl.text, 'user_id': supabase.auth.currentUser!.id});
-    postCtrl.clear();
-    fetchPosts();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('TOOFAN - Real Public'),
-        backgroundColor: Colors.orange,
-        actions: [IconButton(onPressed: () async { await supabase.auth.signOut(); if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage())); }, icon: const Icon(Icons.logout))],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(child: TextField(controller: postCtrl, decoration: const InputDecoration(hintText: 'Kya chal raha hai?', border: OutlineInputBorder()))),
-                const SizedBox(width: 8),
-                ElevatedButton(onPressed: addPost, child: const Text('Post')),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (context, i) {
-                final p = posts[i];
-                return Card(margin: const EdgeInsets.all(8), child: ListTile(title: Text(p['content'] ?? ''), subtitle: Text(p['created_at'].toString())));
-              },
-            ),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('TOOFAN'), backgroundColor: const Color(0xFF1976D2), foregroundColor: Colors.white,
+        actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () async { await Supabase.instance.client.auth.signOut(); if (context.mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage())); })]),
+      body: const Center(child: Text('Welcome to TOOFAN 🔥\nApp is working!', textAlign: TextAlign.center, style: TextStyle(fontSize: 22))),
     );
   }
 }
