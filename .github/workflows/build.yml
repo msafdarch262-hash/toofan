@@ -13,9 +13,14 @@ jobs:
         with:
           flutter-version: '3.22.0'
           channel: 'stable'
+      - name: Recreate android project if missing
+        run: |
+          mv lib/main.dart /tmp/main.dart
+          flutter create . --platforms=android --project-name toofan
+          mv /tmp/main.dart lib/main.dart
       - run: flutter pub get
-      - run: flutter build apk --release
+      - run: flutter build apk --release --no-tree-shake-icons
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-Real-App
+          name: TOOFAN-Real-Public-App
           path: build/app/outputs/flutter-apk/app-release.apk
