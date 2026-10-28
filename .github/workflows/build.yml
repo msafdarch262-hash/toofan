@@ -17,11 +17,14 @@ jobs:
         run: |
           flutter pub add supabase_flutter
           flutter pub get
-          echo "Adding your 3D T icon..."
+          echo "Checking icon..."
+          ls -la | grep icon
           mkdir -p android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
-          for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done
+          if [ -f "icon.png" ]; then for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; echo "Icon OK"; else echo "icon.png not in root, skipping icon step"; fi
+          if [ -f "ICON.PNG" ]; then for d in android/app/src/main/res/mipmap-*; do cp ICON.PNG $d/ic_launcher.png; done; fi
+          if [ -f "Icon.png" ]; then for d in android/app/src/main/res/mipmap-*; do cp Icon.png $d/ic_launcher.png; done; fi
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-FINAL-3D-T-ICON-ALL-FEATURES-APK
+          name: TOOFAN-FINAL-APK
           path: build/app/outputs/flutter-apk/app-release.apk
