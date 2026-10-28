@@ -13,16 +13,16 @@ jobs:
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
-      - name: Build TOOFAN Real
+      - name: Build TOOFAN FINAL with Your 3D T Icon + All 12 Points
         run: |
-          cp lib/main.dart /tmp/main.dart
+          cp lib/main.dart /tmp/m.dart
           flutter create . --platforms=android --project-name toofan --org com.toofan.app
-          cp /tmp/main.dart lib/main.dart
-          sed -i 's/<manifest.*>/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android">\n    <uses-permission android:name="android.permission.INTERNET" \/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" \/>/' android/app/src/main/AndroidManifest.xml
-          if [ -f icon.png ]; then for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; fi
+          cp /tmp/m.dart lib/main.dart
+          flutter pub add supabase_flutter
           flutter pub get
-          flutter build apk --release --no-tree-shake-icons
+          if [ -f icon.png ]; then echo "Your 3D T Icon Found!"; mkdir -p android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; fi
+          flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-Real-App
+          name: TOOFAN-FINAL-3D-T-Icon-All-Features
           path: build/app/outputs/flutter-apk/app-release.apk
