@@ -1,94 +1,58 @@
+// TOOFAN - FULL APP WITH T ICON PURE CODE
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: 'https://xekkhzuqmnoxnoybuncz.supabase.co',
-    anonKey: 'sb_publishable_mq5d4H_Jo5w3xlnvB5h2Dw_LQJtJcDM',
-  );
+  await Supabase.initialize(url: 'https://xekkhzuqmnoxnoybuncz.supabase.co', anonKey: 'sb_publishable_mq5d4H_Jo5w3xlnvB5h2Dw_LQJtJcDM');
   runApp(const ToofanApp());
 }
 
-class ToofanApp extends StatelessWidget {
-  const ToofanApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'TOOFAN',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const AuthGate(),
+// PURE CODE T ICON WIDGET - No image needed!
+class TLogo extends StatelessWidget {
+  final double size;
+  const TLogo({super.key, this.size = 40});
+  @override Widget build(BuildContext context){
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF0D47A1), Color(0xFF1976D2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(size*0.2),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Text("T", style: TextStyle(fontSize: size*0.6, fontWeight: FontWeight.w900, color: Colors.white)),
+          Positioned(right: size*0.15, bottom: size*0.15, child: Text("⚡", style: TextStyle(fontSize: size*0.25))),
+        ],
+      ),
     );
   }
 }
 
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) return const HomePage();
-    return const LoginPage();
-  }
-}
+class ToofanApp extends StatelessWidget { const ToofanApp({super.key}); @override Widget build(BuildContext context){ return MaterialApp(debugShowCheckedModeBanner: false, title: 'TOOFAN', theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true), home: const SplashScreen());}}
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
+class SplashScreen extends StatefulWidget { const SplashScreen({super.key}); @override State<SplashScreen> createState()=> _SplashState();}
+class _SplashState extends State<SplashScreen>{ @override void initState(){ super.initState(); Future.delayed(const Duration(seconds: 2), (){ if(mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=> const AuthGate()));});} @override Widget build(BuildContext context){ return Scaffold(backgroundColor: const Color(0xFF0D47A1), body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [ const TLogo(size: 100), const SizedBox(height: 20), const Text("TOOFAN", style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 3)), const SizedBox(height: 30), const CircularProgressIndicator(color: Colors.white)])));}}
 
-class _LoginPageState extends State<LoginPage> {
-  final email = TextEditingController();
-  final pass = TextEditingController();
-  bool loading = false;
-  Future<void> login() async {
-    setState(() => loading = true);
-    try {
-      await Supabase.instance.client.auth.signInWithPassword(email: email.text.trim(), password: pass.text.trim());
-      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-    }
-    setState(() => loading = false);
-  }
-  Future<void> signup() async {
-    setState(() => loading = true);
-    try {
-      await Supabase.instance.client.auth.signUp(email: email.text.trim(), password: pass.text.trim());
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account bana, ab Login karo')));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-    }
-    setState(() => loading = false);
-  }
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('TOOFAN - Login'), backgroundColor: const Color(0xFF1976D2), foregroundColor: Colors.white),
-      body: Padding(padding: const EdgeInsets.all(20), child: Column(children: [
-        TextField(controller: email, decoration: const InputDecoration(labelText: 'Email')),
-        TextField(controller: pass, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
-        const SizedBox(height: 20),
-        loading ? const CircularProgressIndicator() : Row(children: [
-          Expanded(child: ElevatedButton(onPressed: login, child: const Text('Login'))),
-          const SizedBox(width: 10),
-          Expanded(child: OutlinedButton(onPressed: signup, child: const Text('Signup'))),
-        ])
-      ])),
-    );
-  }
-}
+class AuthGate extends StatelessWidget { const AuthGate({super.key}); @override Widget build(BuildContext context){ final s = Supabase.instance.client.auth.currentSession; if(s!=null) return const MainShell(); return const LoginSignupScreen(); }}
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('TOOFAN'), backgroundColor: const Color(0xFF1976D2), foregroundColor: Colors.white,
-        actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () async { await Supabase.instance.client.auth.signOut(); if (context.mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage())); })]),
-      body: const Center(child: Text('Welcome to TOOFAN 🔥\nApp is working!', textAlign: TextAlign.center, style: TextStyle(fontSize: 22))),
-    );
-  }
-}
+class LoginSignupScreen extends StatefulWidget { const LoginSignupScreen({super.key}); @override State<LoginSignupScreen> createState()=> _LState();}
+class _LState extends State<LoginSignupScreen>{ bool isLogin=true; final emailC=TextEditingController(); final passC=TextEditingController(); bool load=false; Future<void> submit() async { setState(()=>load=true); try{ if(isLogin){ await Supabase.instance.client.auth.signInWithPassword(email: emailC.text.trim(), password: passC.text.trim()); } else { await Supabase.instance.client.auth.signUp(email: emailC.text.trim(), password: passC.text.trim()); } if(mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=> const MainShell())); }catch(e){ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"))); } setState(()=>load=false); } @override Widget build(BuildContext context){ return Scaffold(body: SingleChildScrollView(padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [ const SizedBox(height: 40), const Center(child: TLogo(size: 80)), const SizedBox(height: 16), const Center(child: Text("TOOFAN ⚡", style: TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: Color(0xFF0D47A1)))), const SizedBox(height: 30), TextField(controller: emailC, decoration: InputDecoration(labelText: "Mobile / Email", border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const Icon(Icons.person))), const SizedBox(height: 16), TextField(controller: passC, obscureText: true, decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const Icon(Icons.lock))), Align(alignment: Alignment.centerRight, child: TextButton(onPressed: (){}, child: const Text("Forgot Password?"))), const SizedBox(height: 10), load? const Center(child: CircularProgressIndicator()): ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D47A1), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: submit, child: Text(isLogin? "Login":"Create New Account", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))), const SizedBox(height: 16), OutlinedButton(onPressed: ()=>setState(()=>isLogin=!isLogin), child: Text(isLogin? "Create New Account":"Already have account? Login")), ]))); }}
+
+// MAIN SHELL - TOP BAR ME T LOGO PURE CODE SE
+class MainShell extends StatefulWidget { const MainShell({super.key}); @override State<MainShell> createState()=> _MShell();}
+class _MShell extends State<MainShell>{ int idx=0; final pages = [const HomeDashboard(), const VideoDashboard(), const ExploreDashboard(), const FamilyDashboard(), const SocietyDashboard()]; @override Widget build(BuildContext context){ return Scaffold(appBar: AppBar(backgroundColor: Colors.white, elevation: 1, title: const Row(children: [TLogo(size: 32), SizedBox(width: 8), Text("TOOFAN ⚡", style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0D47A1), fontSize: 20))]), actions: [IconButton(icon: const Icon(Icons.phone), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> const VoiceCallScreen(name: "Aisha")))), IconButton(icon: const Icon(Icons.videocam), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> const VideoCallScreen(name: "Aisha")))), IconButton(icon: const Icon(Icons.search), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> const SearchScreen()))), IconButton(icon: const Icon(Icons.chat_bubble), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> const ChatListScreen()))), Stack(children: [IconButton(icon: const Icon(Icons.notifications), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> const NotificationScreen()))), Positioned(right: 6, top: 6, child: Container(padding: const EdgeInsets.all(3), decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle), child: const Text("1", style: TextStyle(fontSize: 10, color: Colors.white))))]), GestureDetector(onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> const ProfileScreen())), child: const Padding(padding: EdgeInsets.only(right: 12, left: 4), child: CircleAvatar(backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=32")))),]), body: pages[idx], bottomNavigationBar: BottomNavigationBar(currentIndex: idx, onTap: (i){ if(i==5){ Navigator.push(context, MaterialPageRoute(builder: (_)=> const ProfileScreen())); } else { setState(()=>idx=i); } }, type: BottomNavigationBarType.fixed, selectedItemColor: const Color(0xFF0D47A1), unselectedItemColor: Colors.grey, items: const [BottomNavigationBarItem(icon: Icon(Icons.home), label: "HOME"), BottomNavigationBarItem(icon: Icon(Icons.videocam), label: "VIDEO"), BottomNavigationBarItem(icon: Icon(Icons.explore), label: "EXPLORE"), BottomNavigationBarItem(icon: Icon(Icons.family_restroom), label: "FAMILY"), BottomNavigationBarItem(icon: Icon(Icons.groups), label: "SOCIETY"), BottomNavigationBarItem(icon: Icon(Icons.person), label: "PROFILE"),]),);}}
+
+class HomeDashboard extends StatelessWidget{ const HomeDashboard({super.key}); @override Widget build(BuildContext context){ return ListView(padding: const EdgeInsets.all(12), children: [SizedBox(height: 90, child: ListView(scrollDirection: Axis.horizontal, children: [_story("Your Story", "https://i.pravatar.cc/150?img=1", true), _story("Aisha", "https://i.pravatar.cc/150?img=5", false), _story("Leo", "https://i.pravatar.cc/150?img=8", false), _story("Mira", "https://i.pravatar.cc/150?img=9", false), _story("Dev", "https://i.pravatar.cc/150?img=12", false), _story("Sara", "https://i.pravatar.cc/150?img=32", false),])), Card(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), child: Padding(padding: const EdgeInsets.all(12), child: Column(children: [TextField(decoration: InputDecoration(hintText: "What's happening?", border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const CircleAvatar(backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=1")))), const SizedBox(height: 8), Row(children: [const Icon(Icons.photo, color: Colors.green), const Text(" Photo "), const SizedBox(width: 10), const Icon(Icons.emoji_emotions, color: Colors.orange), const Text(" Emoji "), const SizedBox(width: 10), const Icon(Icons.location_on, color: Colors.red), const Text(" Location "), const Spacer(), ElevatedButton(onPressed: (){}, child: const Text("Post"))])]))), const SizedBox(height: 10), _postCard(name: "Sara Khan", img: "https://picsum.photos/500/300?1", avatar: "https://i.pravatar.cc/150?img=32", likes: "124", comments: "18"), _postCard(name: "Leo Martin", img: "https://picsum.photos/500/300?2", avatar: "https://i.pravatar.cc/150?img=8", likes: "89", comments: "12", isVideo: true),]);} static Widget _story(String name, String url, bool isMe){ return Padding(padding: const EdgeInsets.only(right: 12), child: Column(children: [Stack(children: [CircleAvatar(radius: 30, backgroundColor: Colors.blue, child: CircleAvatar(radius: 28, backgroundImage: NetworkImage(url))), if(isMe) Positioned(bottom: 0, right: 0, child: Container(decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle), child: const Icon(Icons.add, size: 16, color: Colors.white))) ]), const SizedBox(height: 4), Text(name, style: const TextStyle(fontSize: 12)) ]));} static Widget _postCard({required String name, required String img, required String avatar, required String likes, required String comments, bool isVideo=false}){ return Card(margin: const EdgeInsets.only(bottom: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [ListTile(leading: CircleAvatar(backgroundImage: NetworkImage(avatar)), title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)), subtitle: const Text("2 hours ago"), trailing: Row(mainAxisSize: MainAxisSize.min, children: [ElevatedButton.icon(icon: const Icon(Icons.phone, size: 16), label: const Text("Call"), onPressed: (){}, style: ElevatedButton.styleFrom(minimumSize: const Size(10,30))), const SizedBox(width: 4), ElevatedButton.icon(icon: const Icon(Icons.chat, size: 16), label: const Text("Chat"), onPressed: (){}, style: ElevatedButton.styleFrom(minimumSize: const Size(10,30)))] )), Stack(children: [Image.network(img, width: double.infinity, height: 200, fit: BoxFit.cover), if(isVideo) const Center(child: Icon(Icons.play_circle_fill, size: 60, color: Colors.white70))]), Padding(padding: const EdgeInsets.all(10), child: Row(children: [const Icon(Icons.favorite, color: Colors.red), Text(" $likes "), const SizedBox(width: 10), const Icon(Icons.comment), Text(" $comments "), const SizedBox(width: 10), const Icon(Icons.share), const Text(" Share")]))]));}}
+class VideoDashboard extends StatelessWidget{ const VideoDashboard({super.key}); @override Widget build(BuildContext context){ return PageView.builder(itemCount: 5, scrollDirection: Axis.vertical, itemBuilder: (_, i){ return Stack(children: [Container(color: Colors.black, child: Center(child: Image.network("https://picsum.photos/400/800?${i+10}", fit: BoxFit.cover, width: double.infinity))), Positioned(right: 10, bottom: 120, child: Column(children: [_sideIcon(Icons.favorite, "1.2K"), _sideIcon(Icons.comment, "348"), _sideIcon(Icons.share, "89"), _sideIcon(Icons.bookmark, "24"), const SizedBox(height: 20), const CircleAvatar(backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=5"))])), Positioned(left: 12, bottom: 20, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text("@user${i+1}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(border: Border.all(color: Colors.white), borderRadius: BorderRadius.circular(4)), child: const Text("Follow", style: TextStyle(color: Colors.white, fontSize: 12)))]), const Text("This is my TOOFAN video 🔥 #viral", style: TextStyle(color: Colors.white))]))]);});} static Widget _sideIcon(IconData ic, String txt){ return Padding(padding: const EdgeInsets.only(bottom: 16), child: Column(children: [Icon(ic, color: Colors.white, size: 32), Text(txt, style: const TextStyle(color: Colors.white, fontSize: 12))]));}}
+class ExploreDashboard extends StatelessWidget{ const ExploreDashboard({super.key}); @override Widget build(BuildContext context){ return GridView.builder(padding: const EdgeInsets.all(8), gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.8), itemCount: 10, itemBuilder: (_, i)=> Card(child: Column(children: [Expanded(child: Image.network("https://picsum.photos/200/200?${i+20}", fit: BoxFit.cover, width: double.infinity)), ListTile(title: Text("User ${i+1}"), subtitle: const Text("Trending"), trailing: ElevatedButton(onPressed: (){}, child: const Text("Follow")))])));}}
+class FamilyDashboard extends StatelessWidget{ const FamilyDashboard({super.key}); @override Widget build(BuildContext context){ return ListView(padding: const EdgeInsets.all(12), children: [const Text("Family Members", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)), _familyTile("Mom", "Safe At Home", "https://i.pravatar.cc/150?img=26"), _familyTile("Dad", "At Office", "https://i.pravatar.cc/150?img=15"), _familyTile("Sister", "At School", "https://i.pravatar.cc/150?img=32"), ElevatedButton.icon(icon: const Icon(Icons.add), label: const Text("Add Member"), onPressed: (){}), const SizedBox(height: 16), Container(height: 180, decoration: BoxDecoration(color: Colors.blue.shade100, borderRadius: BorderRadius.circular(16)), child: const Center(child: Icon(Icons.location_on, size: 40, color: Colors.red))), const SizedBox(height: 20), SizedBox(width: double.infinity, child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)), onPressed: (){}, child: const Text("🚨 Emergency Help Button", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)))),]);} static Widget _familyTile(String name, String status, String avatar){ return Card(child: ListTile(leading: CircleAvatar(backgroundImage: NetworkImage(avatar)), title: Text(name), subtitle: Text(status, style: const TextStyle(color: Colors.green)), trailing: Row(mainAxisSize: MainAxisSize.min, children: [IconButton(icon: const Icon(Icons.phone, color: Colors.blue), onPressed: (){}), IconButton(icon: const Icon(Icons.videocam, color: Colors.green), onPressed: (){}), IconButton(icon: const Icon(Icons.chat, color: Colors.orange), onPressed: (){})])));}}
+class SocietyDashboard extends StatelessWidget{ const SocietyDashboard({super.key}); @override Widget build(BuildContext context){ return ListView(padding: const EdgeInsets.all(12), children: [Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.red)), child: const Row(children: [Icon(Icons.warning, color: Colors.red), SizedBox(width: 8), Text("Safety Alert: Be careful in Area 3", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))])), const SizedBox(height: 10), const Text("Community Posts", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Card(child: Padding(padding: EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Ali Khan: Today we cleaned society park!"), SizedBox(height: 8), Row(children: [Icon(Icons.favorite_border, size: 16), Text(" 24  "), Icon(Icons.comment, size: 16), Text(" 5")])]))), ElevatedButton(onPressed: (){}, child: const Text("+ Create New Post"))]);}}
+class ProfileScreen extends StatelessWidget{ const ProfileScreen({super.key}); @override Widget build(BuildContext context){ return Scaffold(appBar: AppBar(title: const Text("Profile & Settings")), body: ListView(children: [const SizedBox(height: 20), const Center(child: TLogo(size: 80)), const SizedBox(height: 10), const Center(child: Text("TOOFAN User", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))), const Divider(height: 30), _setting(Icons.person, "My Profile"), _setting(Icons.lock, "Privacy"), _setting(Icons.security, "Password / Security - Full Security"), _setting(Icons.family_restroom, "Family Settings"), _setting(Icons.face, "Hijab Settings (ON/OFF)"), _setting(Icons.call, "Call Settings"), _setting(Icons.chat, "Chat Settings"), _setting(Icons.video_settings, "Video Settings"), _setting(Icons.notifications, "Notification Settings"), _setting(Icons.admin_panel_settings, "For Owner Authority - Admin Panel"), _setting(Icons.help, "Help & Support"), ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: const Text("Logout", style: TextStyle(color: Colors.red)), onTap: () async { await Supabase.instance.client.auth.signOut(); if(context.mounted) Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_)=> const LoginSignupScreen()), (_)=>false);}),]));} static Widget _setting(IconData ic, String title){ return ListTile(leading: Icon(ic), title: Text(title), trailing: const Icon(Icons.arrow_forward_ios, size: 14), onTap: (){});}}
+class ChatListScreen extends StatelessWidget{ const ChatListScreen({super.key}); @override Widget build(BuildContext context){ return Scaffold(appBar: AppBar(title: const Text("Chats")), body: ListView(children: [_chatTile(context, "Aisha", "https://i.pravatar.cc/150?img=5"), _chatTile(context, "Leo", "https://i.pravatar.cc/150?img=8")]), floatingActionButton: FloatingActionButton(onPressed: (){}, child: const Icon(Icons.add_comment)));} static Widget _chatTile(BuildContext ctx, String name, String av){ return ListTile(leading: CircleAvatar(backgroundImage: NetworkImage(av)), title: Text(name), subtitle: const Text("Hi, TOOFAN me dekha..."), onTap: ()=> Navigator.push(ctx, MaterialPageRoute(builder: (_)=> ChatDetailScreen(name: name, avatar: av))));}}
+class ChatDetailScreen extends StatelessWidget{ final String name; final String avatar; const ChatDetailScreen({super.key, required this.name, required this.avatar}); @override Widget build(BuildContext context){ return Scaffold(appBar: AppBar(title: Text(name), actions: [IconButton(icon: const Icon(Icons.phone), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> VoiceCallScreen(name: name)))), IconButton(icon: const Icon(Icons.videocam), onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (_)=> VideoCallScreen(name: name))))]), body: Column(children: [Expanded(child: ListView(padding: const EdgeInsets.all(12), children: const [Align(alignment: Alignment.centerLeft, child: Card(child: Padding(padding: EdgeInsets.all(10), child: Text("Salam!")))), Align(alignment: Alignment.centerRight, child: Card(color: Color(0xFF0D47A1), child: Padding(padding: EdgeInsets.all(10), child: Text("Walaikum Salam! 🔥", style: TextStyle(color: Colors.white)))))] )), Padding(padding: const EdgeInsets.all(8), child: Row(children: [IconButton(icon: const Icon(Icons.mic), onPressed: (){}), Expanded(child: TextField(decoration: InputDecoration(hintText: "Message...", border: OutlineInputBorder(borderRadius: BorderRadius.circular(20))))), IconButton(icon: const Icon(Icons.send, color: Color(0xFF0D47A1)), onPressed: (){})]))]));}}
+class VoiceCallScreen extends StatelessWidget{ final String name; const VoiceCallScreen({super.key, required this.name}); @override Widget build(BuildContext context){ return Scaffold(backgroundColor: const Color(0xFF0D47A1), body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Spacer(), CircleAvatar(radius: 70, backgroundImage: NetworkImage("https://i.pravatar.cc/300?img=5")), const SizedBox(height: 20), Text(name, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)), const Spacer(), Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [Column(children: [CircleAvatar(radius: 30, backgroundColor: Colors.white24, child: Icon(Icons.mic_off, color: Colors.white)), const Text("Mute", style: TextStyle(color: Colors.white))]), Column(children: [CircleAvatar(radius: 30, backgroundColor: Colors.red, child: Icon(Icons.call_end, color: Colors.white)), const Text("End", style: TextStyle(color: Colors.white))])]), const SizedBox(height: 40)]));}}
+class VideoCallScreen extends StatelessWidget{ final String name; const VideoCallScreen({super.key, required this.name}); @override Widget build(BuildContext context){ return Scaffold(backgroundColor: Colors.black, body: Stack(children: [Image.network("https://picsum.photos/400/800?100", fit: BoxFit.cover, width: double.infinity, height: double.infinity), Positioned(bottom: 30, left: 0, right: 0, child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [CircleAvatar(radius: 28, backgroundColor: Colors.black54, child: Icon(Icons.mic_off, color: Colors.white)), CircleAvatar(radius: 28, backgroundColor: Colors.red, child: Icon(Icons.call_end, color: Colors.white))]))]));}}
+class SearchScreen extends StatelessWidget{ const SearchScreen({super.key}); @override Widget build(BuildContext context){ return Scaffold(appBar: AppBar(title: TextField(decoration: InputDecoration(hintText: "Search in TOOFAN...", border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)), prefixIcon: const Icon(Icons.search)))), body: ListView(children: const [ListTile(leading: Icon(Icons.trending_up), title: Text("Trending: #TOOFANChallenge"))]));}}
+class NotificationScreen extends StatelessWidget{ const NotificationScreen({super.key}); @override Widget build(BuildContext context){ return Scaffold(appBar: AppBar(title: const Text("Notifications (1)")), body: ListView(children: const [ListTile(leading: CircleAvatar(backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=5")), title: Text("Aisha liked your post"), trailing: Icon(Icons.favorite, color: Colors.red)) ]));}}
