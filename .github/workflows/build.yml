@@ -13,18 +13,12 @@ jobs:
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
-      - name: Fix and Build
+      - name: Build APK
         run: |
-          cp lib/main.dart /tmp/m.dart
-          flutter create . --platforms=android --project-name toofan --org com.toofan.app --overwrite
-          cp /tmp/m.dart lib/main.dart
           flutter pub add supabase_flutter
           flutter pub get
-          ICON=""
-          if [ -f icon.png ]; then ICON=icon.png; elif [ -f *.jpg ]; then ICON=$(ls *.jpg | head -n1); elif [ -f *.jpeg ]; then ICON=$(ls *.jpeg | head -n1); fi
-          if [ ! -z "$ICON" ]; then mkdir -p android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; for d in android/app/src/main/res/mipmap-*; do cp "$ICON" $d/ic_launcher.png; done; echo "Icon added: $ICON"; fi
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-APK-FIXED
+          name: TOOFAN-APK-FINAL
           path: build/app/outputs/flutter-apk/app-release.apk
