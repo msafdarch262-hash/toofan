@@ -13,12 +13,15 @@ jobs:
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
-      - name: Build APK
+      - name: Build TOOFAN with 3D T Icon + All 12 Points
         run: |
           flutter pub add supabase_flutter
           flutter pub get
+          echo "Adding your 3D T icon..."
+          mkdir -p android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
+          for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-APK-FINAL
+          name: TOOFAN-FINAL-3D-T-ICON-ALL-FEATURES-APK
           path: build/app/outputs/flutter-apk/app-release.apk
