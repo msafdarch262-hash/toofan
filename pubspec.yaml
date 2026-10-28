@@ -1,5 +1,5 @@
 name: toofan
-description: Toofan online app
+description: TOOFAN Real Public App
 publish_to: 'none'
 version: 1.0.0+1
 environment:
@@ -7,6 +7,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  supabase_flutter: ^2.6.0
+  supabase_flutter: ^2.5.6
 flutter:
   uses-material-design: true
