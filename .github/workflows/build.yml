@@ -15,16 +15,21 @@ jobs:
           channel: 'stable'
       - name: Build TOOFAN with 3D T Icon + All 12 Points
         run: |
+          echo "Saving your main.dart"
+          cp lib/main.dart /tmp/main.dart
+          echo "Fixing Android v1 embedding - recreating android folder"
+          flutter create . --platforms=android --org com.toofan.app --project-name toofan --overwrite
+          cp /tmp/main.dart lib/main.dart
           flutter pub add supabase_flutter
           flutter pub get
-          echo "Checking icon..."
-          ls -la | grep icon
+          echo "Fixing icon name icon-png.jpg -> icon.png"
+          ls -lh | grep icon
+          if [ -f "icon-png.jpg" ]; then cp "icon-png.jpg" icon.png; echo "Renamed icon-png.jpg to icon.png"; fi
+          if [ -f "icon-png.png" ]; then cp "icon-png.png" icon.png; fi
           mkdir -p android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
-          if [ -f "icon.png" ]; then for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; echo "Icon OK"; else echo "icon.png not in root, skipping icon step"; fi
-          if [ -f "ICON.PNG" ]; then for d in android/app/src/main/res/mipmap-*; do cp ICON.PNG $d/ic_launcher.png; done; fi
-          if [ -f "Icon.png" ]; then for d in android/app/src/main/res/mipmap-*; do cp Icon.png $d/ic_launcher.png; done; fi
+          if [ -f "icon.png" ]; then for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; echo "3D T Icon Added!"; fi
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-FINAL-APK
+          name: TOOFAN-FINAL-3D-ICON-APK
           path: build/app/outputs/flutter-apk/app-release.apk
