@@ -1,4 +1,4 @@
-name: Build TOOFAN APK
+name: Build
 on: [push]
 jobs:
   build:
@@ -6,30 +6,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+        with: {distribution: 'zulu', java-version: '17'}
       - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.0'
-          channel: 'stable'
-      - name: Build TOOFAN with 3D T Icon + All 12 Points
-        run: |
-          echo "Saving main.dart"
-          cp lib/main.dart /tmp/main.dart
-          echo "Deleting old broken android folder"
+        with: {flutter-version: '3.24.0'}
+      - run: |
           rm -rf android
           flutter create . --platforms=android --org com.toofan.app --project-name toofan
-          cp /tmp/main.dart lib/main.dart
-          flutter pub add supabase_flutter
           flutter pub get
-          echo "Icon fix"
-          ls -lh | grep -i icon
-          if [ -f "icon-png.jpg" ]; then cp "icon-png.jpg" icon.png; fi
-          mkdir -p android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
-          if [ -f "icon.png" ]; then for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; echo "3D T Icon Added"; fi
-          flutter build apk --release --verbose
+          flutter build apk --debug
       - uses: actions/upload-artifact@v4
-        with:
-          name: TOOFAN-FINAL-3D-T-ICON-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+        with: {name: TOOFAN-12-POINT-APK, path: build/app/outputs/flutter-apk/app-debug.apk}
