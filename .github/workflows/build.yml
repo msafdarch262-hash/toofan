@@ -13,17 +13,14 @@ jobs:
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
-      - name: Build APK with Internet Permission
+      - name: Build TOOFAN
         run: |
-          mv lib/main.dart /tmp/main.dart
-          flutter create . --platforms=android --project-name toofan --org com.toofan.app
-          mv /tmp/main.dart lib/main.dart
-          echo "Adding Internet Permission..."
+          flutter create . --platforms=android --project-name toofan --org com.toofan.app --overwrite
           sed -i 's/<manifest.*>/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android">\n    <uses-permission android:name="android.permission.INTERNET" \/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" \/>/' android/app/src/main/AndroidManifest.xml
-          cat android/app/src/main/AndroidManifest.xml
+          if [ -f icon.png ]; then echo "ICON FOUND"; for d in android/app/src/main/res/mipmap-*; do cp icon.png $d/ic_launcher.png; done; else echo "NO icon.png - using default"; fi
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-Real-App-Fixed
+          name: TOOFAN-Fixed-APK
           path: build/app/outputs/flutter-apk/app-release.apk
