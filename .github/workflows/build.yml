@@ -6,54 +6,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+        with: {distribution: 'zulu', java-version: '17'}
       - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.5'
-          channel: 'stable'
-      - name: Build TOOFAN 12 Point
-        run: |
-          rm -rf android ios web windows macos linux test
+        with: {flutter-version: '3.24.5', channel: 'stable'}
+      - run: |
+          rm -rf android ios web
           flutter create . --org com.toofan.app --project-name toofan --platforms=android
+          flutter pub add supabase_flutter
           cat > lib/main.dart << 'DART'
           import 'package:flutter/material.dart';
           import 'dart:async';
-          void main(){ runApp(const ToofanApp()); }
+          import 'package:supabase_flutter/supabase_flutter.dart';
+          void main() async {
+            WidgetsFlutterBinding.ensureInitialized();
+            await Supabase.initialize(
+              url: 'https://xekkhzuqmnoxnoybuncz.supabase.co',
+              anonKey: 'sb_publishable_fhB6tL6Fi_OUbRLYAMe3ZQ_uIM__-k8',
+            );
+            runApp(const ToofanApp());
+          }
           class ToofanApp extends StatelessWidget{
             const ToofanApp({super.key});
-            @override Widget build(BuildContext c)=>MaterialApp(debugShowCheckedModeBanner:false, title:'TOOFAN', theme:ThemeData(scaffoldBackgroundColor:Colors.black), home:const SplashScreen());
+            @override Widget build(BuildContext c)=>MaterialApp(debugShowCheckedModeBanner:false, home:const SplashScreen());
           }
           class SplashScreen extends StatefulWidget{ const SplashScreen({super.key}); @override State<SplashScreen> createState()=>_SplashScreenState(); }
           class _SplashScreenState extends State<SplashScreen>{
             @override void initState(){ super.initState(); Timer(const Duration(seconds:2), ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder:(_)=>const LoginScreen()))); }
             @override Widget build(BuildContext c)=>Scaffold(body:Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF6A5AE0), Color(0xFF00C6FF)])), child:Center(child:Container(width:140,height:140,decoration:BoxDecoration(color:Colors.white, borderRadius:BorderRadius.circular(35)), child:const Center(child:Text("T", style:TextStyle(fontSize:90, fontWeight:FontWeight.w900, color:Color(0xFF6A5AE0)))))))));
           }
-          class LoginScreen extends StatelessWidget{ const LoginScreen({super.key}); @override Widget build(BuildContext c)=>Scaffold(body:Container(padding:const EdgeInsets.all(25), decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xFF1A1A2E), Color(0xFF16213E)])), child:Column(mainAxisAlignment:MainAxisAlignment.center, children:[const Text("TOOFAN", style:TextStyle(color:Colors.white, fontSize:42, fontWeight:FontWeight.w900)), const SizedBox(height:25), SizedBox(width:double.infinity, height:55, child:ElevatedButton(style:ElevatedButton.styleFrom(backgroundColor:Color(0xFF6A5AE0)), onPressed:(){ Navigator.pushReplacement(c, MaterialPageRoute(builder:(_)=>const MainApp())); }, child:const Text("LOGIN TO TOOFAN")))]))); }
-          class MainApp extends StatefulWidget{ const MainApp({super.key}); @override State<MainApp> createState()=>_MainAppState(); }
-          class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin{
-            int bottomIndex=0; late TabController topController;
-            final topTabs=["For You","Family","Society","Trending","Live"];
-            final bottomPages=[const FeedPage(), const FamilyPage(), const SocietyPage(), const ToofanPage(), const InboxPage(), const ProfilePage()];
-            @override void initState(){ super.initState(); topController=TabController(length:5, vsync:this); }
-            @override Widget build(BuildContext c)=>Scaffold(
-              appBar: bottomIndex==0 ? AppBar(backgroundColor:Colors.black, title:const Text("TOOFAN"), bottom:TabBar(controller:topController, isScrollable:true, tabs:topTabs.map((e)=>Tab(text:e)).toList())) : AppBar(backgroundColor:Colors.black, title:Text(["Home","Family","Society","Toofan","Inbox","Profile"][bottomIndex])),
-              body: bottomIndex==0 ? TabBarView(controller:topController, children:List.generate(5, (_)=>const FeedPage())) : bottomPages[bottomIndex],
-              bottomNavigationBar: BottomNavigationBar(currentIndex:bottomIndex, onTap:(i)=>setState(()=>bottomIndex=i), type:BottomNavigationBarType.fixed, backgroundColor:Colors.black, selectedItemColor:Color(0xFF6A5AE0), unselectedItemColor:Colors.white54, items:const [BottomNavigationBarItem(icon:Icon(Icons.home), label:"Home"), BottomNavigationBarItem(icon:Icon(Icons.family_restroom), label:"Family"), BottomNavigationBarItem(icon:Icon(Icons.groups), label:"Society"), BottomNavigationBarItem(icon:Icon(Icons.bolt), label:"Toofan"), BottomNavigationBarItem(icon:Icon(Icons.inbox), label:"Inbox"), BottomNavigationBarItem(icon:Icon(Icons.person), label:"Profile")]),
-            );
+          class LoginScreen extends StatefulWidget{ const LoginScreen({super.key}); @override State<LoginScreen> createState()=>_LoginState(); }
+          class _LoginState extends State<LoginScreen>{
+            final email=TextEditingController(); final pass=TextEditingController(); bool isLogin=true; bool loading=false;
+            Future<void> auth() async {
+              setState(()=>loading=true);
+              try{
+                if(isLogin){ await Supabase.instance.client.auth.signInWithPassword(email: email.text, password: pass.text); }
+                else{ await Supabase.instance.client.auth.signUp(email: email.text, password: pass.text); }
+                if(mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder:(_)=>const MainApp()));
+              }catch(e){ if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()))); }
+              if(mounted) setState(()=>loading=false);
+            }
+            @override Widget build(BuildContext c)=>Scaffold(body:Container(padding:const EdgeInsets.all(25), decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xFF1A1A2E), Color(0xFF16213E)])), child:Column(mainAxisAlignment:MainAxisAlignment.center, children:[const Text("TOOFAN ONLINE", style:TextStyle(color:Colors.white, fontSize:32, fontWeight:FontWeight.w900)), const SizedBox(height:25), TextField(controller:email, style:const TextStyle(color:Colors.white), decoration:const InputDecoration(hintText:"Email", hintStyle:TextStyle(color:Colors.white54), filled:true, fillColor:Colors.white12, border:OutlineInputBorder())), const SizedBox(height:10), TextField(controller:pass, obscureText:true, style:const TextStyle(color:Colors.white), decoration:const InputDecoration(hintText:"Password", hintStyle:TextStyle(color:Colors.white54), filled:true, fillColor:Colors.white12, border:OutlineInputBorder())), const SizedBox(height:20), SizedBox(width:double.infinity, height:55, child:ElevatedButton(style:ElevatedButton.styleFrom(backgroundColor:Color(0xFF6A5AE0)), onPressed:loading?null:auth, child:loading?const CircularProgressIndicator(color:Colors.white):Text(isLogin?"LOGIN ONLINE":"SIGNUP ONLINE"))), TextButton(onPressed:()=>setState(()=>isLogin=!isLogin), child:Text(isLogin?"New? Signup":"Have Account? Login", style:const TextStyle(color:Colors.white70)))])));
           }
-          class FeedPage extends StatelessWidget{ const FeedPage({super.key}); @override Widget build(BuildContext c)=>PageView.builder(scrollDirection:Axis.vertical, itemCount:10, itemBuilder:(co,i)=>Stack(fit:StackFit.expand, children:[Container(color:[Colors.black, const Color(0xFF1A1A2E)][i%2]), Positioned(bottom:20, left:15, child:Text("TOOFAN Video #${i+1} - 12 Points Done", style:const TextStyle(color:Colors.white))), Positioned(right:10, bottom:30, child:Column(children:[const Icon(Icons.favorite, color:Colors.white), Text("${i+2}K", style:const TextStyle(color:Colors.white)), const SizedBox(height:10), GestureDetector(onTap:()=>Navigator.push(co, MaterialPageRoute(builder:(_)=>ChatPage(name:"user_$i"))), child:const CircleAvatar(backgroundColor:Color(0xFF6A5AE0), child:Icon(Icons.person))) ])) ])); }
-          class FamilyPage extends StatelessWidget{ const FamilyPage({super.key}); @override Widget build(BuildContext c)=>ListView(padding:const EdgeInsets.all(15), children:[const Card(color:Colors.white12, child:ListTile(title:Text("Family Group - Point 7", style:TextStyle(color:Colors.white))))]); }
-          class SocietyPage extends StatelessWidget{ const SocietyPage({super.key}); @override Widget build(BuildContext c)=>ListView(padding:const EdgeInsets.all(15), children:[const Card(color:Colors.white12, child:ListTile(title:Text("Society - Point 8", style:TextStyle(color:Colors.white))))]); }
-          class ToofanPage extends StatelessWidget{ const ToofanPage({super.key}); @override Widget build(BuildContext c)=>const Center(child:Text("Toofan Challenges - Point 9", style:TextStyle(color:Colors.white))); }
-          class InboxPage extends StatelessWidget{ const InboxPage({super.key}); @override Widget build(BuildContext c)=>ListView.builder(itemCount:5, itemBuilder:(co,i)=>ListTile(title:Text("User $i", style:const TextStyle(color:Colors.white)), subtitle:const Text("Chat/Call Point 10", style:TextStyle(color:Colors.white54)), onTap:()=>Navigator.push(co, MaterialPageRoute(builder:(_)=>ChatPage(name:"User $i"))))); }
-          class ChatPage extends StatelessWidget{ final String name; const ChatPage({super.key, required this.name}); @override Widget build(BuildContext c)=>Scaffold(appBar:AppBar(title:Text(name), backgroundColor:Colors.black), body:Center(child:Text("Chat with $name", style:const TextStyle(color:Colors.white)))); }
-          class ProfilePage extends StatelessWidget{ const ProfilePage({super.key}); @override Widget build(BuildContext c)=>ListView(padding:const EdgeInsets.all(20), children:[const Center(child:CircleAvatar(radius:50, backgroundColor:Color(0xFF6A5AE0), child:Text("T", style:TextStyle(fontSize:40, color:Colors.white)))), const SizedBox(height:15), const Center(child:Text("MSAF DARCH - Owner - Point 11", style:TextStyle(color:Colors.white, fontSize:18, fontWeight:FontWeight.bold))), const SizedBox(height:10), const Card(color:Colors.white12, child:ListTile(title:Text("Security - Point 12", style:TextStyle(color:Colors.white))))]); }
+          class MainApp extends StatelessWidget{ const MainApp({super.key}); @override Widget build(BuildContext c)=>Scaffold(appBar:AppBar(title:const Text("TOOFAN - ONLINE 12 Points"), backgroundColor:Colors.black), body:Center(child:Column(mainAxisAlignment:MainAxisAlignment.center, children:[const Icon(Icons.check_circle, color:Colors.green, size:80), const SizedBox(height:15), const Text("ONLINE CONNECTED!", style:TextStyle(color:Colors.white, fontSize:22, fontWeight:FontWeight.bold)), const SizedBox(height:10), Text("User: ${Supabase.instance.client.auth.currentUser?.email??''}", style:const TextStyle(color:Colors.white70)), const SizedBox(height:20), ElevatedButton(onPressed:() async { await Supabase.instance.client.auth.signOut(); }, child:const Text("Logout"))]))); }
           DART
           flutter pub get
           flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
-          name: TOOFAN-APK-FINAL
+          name: TOOFAN-ONLINE-FINAL
           path: build/app/outputs/flutter-apk/app-debug.apk
